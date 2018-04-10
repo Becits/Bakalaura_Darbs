@@ -1,9 +1,43 @@
 #include <a_samp>
-//#include <AC_FS>
-#include <properties>
 
-// DEFINIICIJAS
-#define COLOR_BRIGHTRED 0xFF6C6CFF
+// Ar Iipashumu saistiitas definicijas
+#define MAX_PROPERTIES 250
+#define MAX_DISTANCE_TO_PROPERTY 1.5
+
+// Kraasu defineeshana
+#define COLOR_GREY 0xAFAFAFAA
+#define COLOR_GREEN 0x33AA33AA
+#define COLOR_WHITE 0xFFFFFFAA
+#define COLOR_ORANGE 0xFF9900AA
+
+enum propinfo
+{
+	PropIsEnabled,
+	PropExists,
+	PropName[60],
+	PropPrice,
+	PropSell,
+	PropEarning,
+	Float:PropX,
+	Float:PropY,
+	Float:PropZ,
+	PropOwner,
+	PropIsBought
+}
+// Mainiigie
+new UseTextDraw = 0;
+new PropInfo[MAX_PROPERTIES][propinfo];
+new PayoutTimer = -1;
+new PropertyPayoutFrequency = 60;
+new MAX_PROPERTIES_PER_PLAYER = 3;
+new PropertyCount;
+new PropertyPickup[MAX_PROPERTIES];
+new PlayerPropertyCount[MAX_PLAYERS];
+new PlayerEarnings[MAX_PLAYERS];
+new Text:PropertyText1[MAX_PLAYERS];
+new Text:PropertyText2[MAX_PLAYERS];
+new IsTextdrawActive[MAX_PLAYERS];
+new TextdrawTimer[MAX_PLAYERS];
 
 public OnFilterScriptInit(){
 	UsePropertyTextDraw(0);
@@ -11,18 +45,18 @@ public OnFilterScriptInit(){
 	SetPayoutFrequency(300);
 	AddProperty("CJ's Garage", -2033.4343,131.5496,28.8359, 5000, 2500, 1000);
 	AddProperty("Train Station", -1982.4717,154.3341,27.6875, 10000, 5000, 1500);
-	AddProperty("Vang Cars", -1932.2813,275.7627,41.0469, 6000, 3000, 1200);
+	AddProperty("Wang Cars", -1932.2813,275.7627,41.0469, 6000, 3000, 1200);
 	AddProperty("Construction Site", -2069.3237,235.2976,36.0414, 15000, 7500, 3000);
 	AddProperty("Cluck'n Bell", -1818.8860,616.5896,35.1719, 5000, 2500, 1000);
 	AddProperty("Airforce Base", -1524.7406,492.7152,7.1797, 20000, 10000, 4000);
 	AddProperty("Victim Shop", -1701.4960,944.1588,24.8906, 10000, 5000, 2000);
 	AddProperty("Pizza Shop", -1804.5896,946.6353,24.8906, 10000, 5000, 1500);
 	AddProperty("Church", -1988.3112,1117.9098,54.4735, 50000, 25000, 4500);
-	AddProperty("Grove St.", 2521.52, -1678.98, 15.44, 5000, 2500, 700);
-	AddProperty("Grove St.", 2469.64, -1648.20, 13.47, 5500, 2750, 1000);
-	AddProperty("Grove St.", 2489.25, -1646.48, 14.06, 4000, 2000, 500);
-	AddProperty("Grove St.", 2498.56, -1644.10, 13.77, 7000, 3500, 1500);
-	AddProperty("Grove St.", 2522.61, -1658.78, 15.49, 3000, 1500, 500);
+	AddProperty("Grove St.", 2521.52, -1678.98, 15.44, 0, 2500, 700);// 5k
+	AddProperty("Grove St.", 2469.64, -1648.20, 13.47, 0, 2750, 1000);// 5,5k
+	AddProperty("Grove St.", 2489.25, -1646.48, 14.06, 0, 2000, 500);// 4k
+	AddProperty("Grove St.", 2498.56, -1644.10, 13.77, 0, 3500, 1500);// 7k
+	AddProperty("Grove St.", 2522.61, -1658.78, 15.49, 0, 1500, 500);// 3k
 	AddProperty("Binco", 1653.5299,1732.8510,10.3915, 10000, 5000, 1500);
 	AddProperty("LV Airport", 1676.7690,1502.4817,10.7703, 200000, 100000, 10000);
 	AddProperty("Car park", 1713.2047,1294.6808,10.8203, 15000, 5250, 4000);
@@ -124,190 +158,29 @@ public OnPlayerDisconnect(playerid, reason) {
     return 1;
 }
 public OnPlayerCommandText(playerid, cmdtext[]) {
-    new cmd[256];
+
+	new cmd[256];
     new idx;
     cmd = strtok(cmdtext, idx);
 
-    //===========================================================
-    if (strcmp("/propertyinfo", cmd, true) == 0) {
-        new tmp[256];
-        tmp = strtok(cmdtext, idx);
-        if (!strlen(tmp)) {
-            SendClientMessage(playerid, 0xFF0000AA, "USE: /propertyinfo [PropertyID]");
-            return 1;
-        }
-        new prop = strval(tmp);
-        if (!DoesPropertyExists(prop)) return SendClientMessage(playerid, 0xFF0000AA, "Ðâds îpaðums neeksistç!");
-        new Float: X, Float: Y, Float: Z;
-        new Price, Earning, SellValue, Name[64], Owner[MAX_PLAYER_NAME], Status[16];
-        GetPropertyInfo(prop, X, Y, Z, Price, SellValue, Earning);
-        format(Name, 64, "%s", GetPropertyName(prop));
-        format(Owner, MAX_PLAYER_NAME, "%s", GetPropertyOwner(prop));
-        format(Status, 16, "%s", GetPropertyStatus(prop));
-        new str[128];
-        format(str, 128, "nosaukums: %s ** X: %.1f  Y:%.1f ** Z:%.1f", Name, X, Y, Z);
-        SendClientMessage(playerid, 0xFFFFFFAA, str);
-        format(str, 128, "q: $%d ** Pardod: $%d ** Ienakumi: $%d", Price, SellValue, Earning);
-        SendClientMessage(playerid, 0xFFFFFFAA, str);
-        format(str, 128, "Ipasnieks: %s", Owner);
-        SendClientMessage(playerid, 0xFFFFFFAA, str);
-        format(str, 128, "Status: %s", Status);
-        SendClientMessage(playerid, 0xFFFFFFAA, str);
-        return 1;
-    }
-
-    //===========================================================
-    if (strcmp("/disableproperty", cmd, true) == 0) {
-        if (!IsPlayerAdmin(playerid)) return 0;
-        new tmp[256];
-        tmp = strtok(cmdtext, idx);
-        new prop = strval(tmp);
-        if (!DoesPropertyExists(prop)) return SendClientMessage(playerid, 0xFF0000AA, "Ðâds îpaðums neeksistç!");
-        ToggleProperty(prop, 0);
-        return 1;
-    }
-
-    //===========================================================
-    if (strcmp("/enableproperty", cmd, true) == 0) {
-        if (!IsPlayerAdmin(playerid)) return 0;
-        new tmp[256];
-        tmp = strtok(cmdtext, idx);
-        new prop = strval(tmp);
-        if (!DoesPropertyExists(prop)) return SendClientMessage(playerid, 0xFF0000AA, "Ðâds îpaðums neeksistç!");
-        ToggleProperty(prop, 1);
-        return 1;
-    }
-
-    //===========================================================
+    // Apskatiit nopirktos iipashumus
     if (strcmp("/myproperties", cmdtext, true) == 0) {
         GetPlayerProperties(playerid);
         return 1;
     }
 
-    //===========================================================
+    // Nopirkt iipashumu
     if (strcmp("/buyproperty", cmdtext, true) == 0) {
         BuyPropertyForPlayer(playerid);
         return 1;
     }
 
-    //===========================================================
+    // Paardot iipashumu
     if (strcmp("/sellproperty", cmdtext, true) == 0) {
         SellPropertyForPlayer(playerid);
         return 1;
     }
 
-    //===========================================================
-    if (strcmp("/locateproperty", cmd, true) == 0) {
-        new tmp[256];
-        tmp = strtok(cmdtext, idx);
-        if (!strlen(tmp)) {
-            SendClientMessage(playerid, COLOR_BRIGHTRED, "PIELIETOJUMS: /locateproperty [PropertyID]");
-            return 1;
-        }
-        new prop = strval(tmp);
-        if (!DoesPropertyExists(prop)) return SendClientMessage(playerid, 0xFF0000AA, "Ðâds îpaðums neeksistç!");
-        LocatePropertyForPlayer(prop, playerid);
-        return 1;
-    }
-
-    //===========================================================
-    if (strcmp("/SetPropertyPrice", cmd, true) == 0) {
-        if (!IsPlayerAdmin(playerid)) return 0;
-        new tmp[256];
-        tmp = strtok(cmdtext, idx);
-        if (!strlen(tmp)) {
-            SendClientMessage(playerid, 0xFF0000AA, "USAGE: /SetPropertyPrice [PropertyID] [Price]");
-            return 1;
-        }
-        new prop = strval(tmp);
-        tmp = strtok(cmdtext, idx);
-        if (!strlen(tmp)) {
-            SendClientMessage(playerid, 0xFF0000AA, "USAGE: /SetPropertyPrice [PropertyID] [Price]");
-            return 1;
-        }
-        if (!DoesPropertyExists(prop)) return SendClientMessage(playerid, 0xFF0000AA, "Ðâds îpaðums neeksistç!");
-        new str[128];
-        new price = strval(tmp);
-        SetPropertyPrice(prop, price);
-        format(str, 128, "You've set the price of \"%s\" (ID: %d) to $%d", PropInfo[prop][PropName], prop, price);
-        SendClientMessage(playerid, 0x00FF00AA, str);
-        return 1;
-    }
-
-    //===========================================================
-    if (strcmp("/SetPropertyValue", cmd, true) == 0) {
-        if (!IsPlayerAdmin(playerid)) return 0;
-        new tmp[256];
-        tmp = strtok(cmdtext, idx);
-        if (!strlen(tmp)) {
-            SendClientMessage(playerid, 0xFF0000AA, "USAGE: /SetPropertyValue [PropertyID] [Value]");
-            return 1;
-        }
-        new prop = strval(tmp);
-        tmp = strtok(cmdtext, idx);
-        if (!strlen(tmp)) {
-            SendClientMessage(playerid, 0xFF0000AA, "USAGE: /SetPropertyValue [PropertyID] [Value]");
-            return 1;
-        }
-        if (!DoesPropertyExists(prop)) return SendClientMessage(playerid, 0xFF0000AA, "Ðâds îpaðums neeksistç!");
-        new str[128];
-        new value = strval(tmp);
-        SetPropertySellValue(prop, value);
-        format(str, 128, "You've set the value of \"%s\" (ID: %d) to $%d", PropInfo[prop][PropName], prop, value);
-        SendClientMessage(playerid, 0x00FF00AA, str);
-        return 1;
-    }
-
-    //===========================================================
-    if (strcmp("/SetPropertyEarning", cmd, true) == 0) {
-        if (!IsPlayerAdmin(playerid)) return 0;
-        new tmp[256];
-        tmp = strtok(cmdtext, idx);
-        if (!strlen(tmp)) {
-            SendClientMessage(playerid, 0xFF0000AA, "USAGE: /SetPropertyEarning [PropertyID] [Earning]");
-            return 1;
-        }
-        new prop = strval(tmp);
-        tmp = strtok(cmdtext, idx);
-        if (!strlen(tmp)) {
-            SendClientMessage(playerid, 0xFF0000AA, "USAGE: /SetPropertyEarning [PropertyID] [Earning]");
-            return 1;
-        }
-        if (!DoesPropertyExists(prop)) return SendClientMessage(playerid, 0xFF0000AA, "Ðâds îpaðums neeksistç!");
-        new str[128];
-        new earning = strval(tmp);
-        SetPropertyEarning(prop, earning);
-        format(str, 128, "You've set the earning of \"%s\" (ID: %d) to $%d", PropInfo[prop][PropName], prop, earning);
-        SendClientMessage(playerid, 0x00FF00AA, str);
-        return 1;
-    }
-
-    //===========================================================
-    if (strcmp("/disablecp", cmdtext, true) == 0) {
-        DisablePlayerCheckpoint(playerid);
-        return 1;
-    }
-
-    //==========================================================
-    if (strcmp("/GetPropertyID", cmdtext, true) == 0) {
-        new ID = IsPlayerNearProperty(playerid);
-        if (ID == -1) return SendClientMessage(playerid, 0xFF0000AA, "Tu esi par tâlu no îpaðuma!");
-        new str[128];
-        format(str, 128, "Tu esi blakus îpaðumam ar ID '%d': \"%s\"", ID, PropInfo[ID][PropName]);
-        SendClientMessage(playerid, 0x00FFFFAA, str);
-        return 1;
-    }
-
-    //===========================================================
-    if (strcmp("/SaveProperty", cmd, true) == 0) {
-        if (!IsPlayerAdmin(playerid)) return 0;
-        new prop = IsPlayerNearProperty(playerid);
-        if (prop == -1) return SendClientMessage(playerid, 0xFF0000AA, "Tu nçsi pietiekami tuvu îpaðumam");
-        if (!DoesPropertyExists(prop)) return SendClientMessage(playerid, 0xFF0000AA, "Ðâds îpaðums neeksistç!");
-        SaveProperty(prop, cmdtext[13]);
-        SendClientMessage(playerid, 0x00FF00AA, "Ipasums saglabats");
-        return 1;
-    }
     return 0;
 }
 
@@ -315,6 +188,7 @@ public OnPlayerPickUpPickup(playerid, pickupid) {
     OnPropertyPickupPickup(playerid, pickupid);
     return 1;
 }
+
 strtok(const string[], & index) {
     new length = strlen(string);
     while ((index < length) && (string[index] <= ' ')) {
@@ -330,3 +204,374 @@ strtok(const string[], & index) {
     result[index - offset] = EOS;
     return result;
 }
+
+// Iipashuma pievienoshana
+stock AddProperty(const name[], Float:X, Float:Y, Float:Z, price, sell, earning)
+{
+    PropertyCount++;
+	new ID = PropertyCount;
+ 	if(PayoutTimer == -1)
+	{
+	    PayoutTimer = SetTimer("PropertyPayout", (PropertyPayoutFrequency*1000), 1);
+	    for(new i=1; i<MAX_PROPERTIES; i++)
+	    {
+	        PropInfo[i][PropOwner] = -1;
+		}
+	}
+	PropInfo[ID][PropExists] = 1;
+	PropInfo[ID][PropIsEnabled] = 1;
+	format(PropInfo[ID][PropName], 60, "%s", name);
+	PropInfo[ID][PropX] = X;
+	PropInfo[ID][PropY] = Y;
+	PropInfo[ID][PropZ] = Z;
+	PropInfo[ID][PropPrice] = price;
+	PropInfo[ID][PropSell] = sell;
+	PropInfo[ID][PropEarning] = earning;
+	PropInfo[ID][PropOwner] = -1;
+	PropertyPickup[ID] = CreatePickup(1273, 1, X, Y, Z);
+	return ID;
+}
+
+// Naudas izmaksas laiks
+stock SetPayoutFrequency(seconds)
+{
+	KillTimer(PayoutTimer);
+	PropertyPayoutFrequency = seconds;
+	PayoutTimer = SetTimer("PropertyPayout", (PropertyPayoutFrequency*1000), 1);
+}
+
+// Maksimaalais iipashumu skaits vienam speeleetaajam
+stock SetMaxPropertiesPerPlayer(amount)
+{
+	MAX_PROPERTIES_PER_PLAYER = amount;
+}
+
+// Speeleetaajam piederoshie iipashumi
+stock GetPlayerProperties(playerid)
+{
+	if(PlayerPropertyCount[playerid] > 0)
+	{
+	    new str[128];
+	    SendClientMessage(playerid, COLOR_GREEN,"Tavi iipashumi:");
+		for(new ID = 1; ID<MAX_PROPERTIES; ID++)
+		{
+		    if(PropInfo[ID][PropIsBought] == 1)
+		    {
+			    if(PropInfo[ID][PropOwner] == playerid)
+			    {
+					format(str,128, "\"%s\" **  Cena: $%d  **  Paardosanas cena: $%d  **  Ienaakumi: $%d", PropInfo[ID][PropName], PropInfo[ID][PropPrice], PropInfo[ID][PropSell], PropInfo[ID][PropEarning]);
+					SendClientMessage(playerid, COLOR_ORANGE, str);
+				}
+			}
+		}
+		format(str, 128, "INFO: Kopeejie ienaakumi: $%d", PlayerEarnings[playerid]);
+		SendClientMessage(playerid, COLOR_GREEN, str);
+	}
+	else
+	{
+		SendClientMessage(playerid, COLOR_GREY, "ERROR: Tev nepieder neviens iipashums!");
+	}
+}
+
+// Nopirkt iipashumu
+stock BuyPropertyForPlayer(playerid)
+{
+	new str[128];
+	new maxP = MAX_PROPERTIES_PER_PLAYER;
+	if(PlayerPropertyCount[playerid] == maxP)
+	{
+	    if(maxP == 1)
+	    {
+	    	format(str, 128, "ERROR: Tev jau pieder viens iipashums!");
+	    	SendClientMessage(playerid, COLOR_GREY, str);
+		}
+		else
+		{
+		    format(str, 128, "ERROR: Tev jau pieder %d iipashumi!", PlayerPropertyCount[playerid]);
+	        SendClientMessage(playerid, COLOR_GREY, str);
+		}
+		return 1;
+	}
+	new ID = IsPlayerNearProperty(playerid);
+	if(ID == -1)
+	{
+	    SendClientMessage(playerid, COLOR_GREY, "ERROR: Tev jaatrodas uz iipashuma ikonas, lai vareetu to nopirkt!");
+	    return 1;
+	}
+	if(PropInfo[ID][PropIsBought] == 1)
+	{
+	    new oName[MAX_PLAYER_NAME];
+	    GetPlayerName(PropInfo[ID][PropOwner], oName, MAX_PLAYER_NAME);
+	    format(str, 128, "ERROR: Shis iipashums pagaidaam pieder speeleetaajam %s (ID: %d)", oName, PropInfo[ID][PropOwner]);
+		SendClientMessage(playerid, COLOR_GREY, str);
+	    return 1;
+	}
+	if(PropInfo[ID][PropOwner] == playerid)
+	{
+		SendClientMessage(playerid, COLOR_GREY, "ERROR: Tev jau pieder shis iipashums!");
+	    return 1;
+	}
+	if(PropInfo[ID][PropPrice] > GetPlayerMoney(playerid))
+	{
+		format(str, 128, "ERROR: Tev nav pieteikami daudz naudas, lai nopirktu sho iipashumu!");
+	    SendClientMessage(playerid, COLOR_GREY, str);
+	    return 1;
+	}
+	GivePlayerMoney(playerid, -PropInfo[ID][PropPrice]);
+	PlayerEarnings[playerid] += PropInfo[ID][PropEarning];
+	PlayerPropertyCount[playerid]++;
+	PropInfo[ID][PropOwner] = playerid;
+	PropInfo[ID][PropIsBought] = 1;
+	new pName[MAX_PLAYER_NAME];
+	GetPlayerName(playerid, pName, MAX_PLAYER_NAME);
+	format(str, 128, "INFO: %s nopirka iipashumu \"%s\" par $%d", pName, PropInfo[ID][PropName], PropInfo[ID][PropPrice]);
+	SendClientMessageToAll(COLOR_WHITE, str);
+	format(str, 128, "INFO: Tu sanemsi $%d katras %d sekundes.", PlayerEarnings[playerid], PropertyPayoutFrequency);
+	SendClientMessage(playerid, COLOR_GREEN, str);
+	return 1;
+}
+
+// Paardot iipashumu
+stock SellPropertyForPlayer(playerid)
+{
+	new str[128];
+	new ID = IsPlayerNearProperty(playerid);
+	if(ID == -1)
+	{
+	    SendClientMessage(playerid, COLOR_GREY, "ERROR: Tev jaatrodas uz sava iipashuma, lai to vareetu paardot!");
+	    return 1;
+	}
+	if(PropInfo[ID][PropOwner] != playerid)
+	{
+		SendClientMessage(playerid, COLOR_GREY, "ERROR: Shis nav tavs iipashums!");
+	    return 1;
+	}
+
+    GivePlayerMoney(playerid, PropInfo[ID][PropSell]);
+    PlayerPropertyCount[playerid]--;
+    PlayerEarnings[playerid] -= PropInfo[ID][PropEarning];
+	PropInfo[ID][PropOwner] = -1;
+	PropInfo[ID][PropIsBought] = 0;
+	new pName[MAX_PLAYER_NAME];
+	GetPlayerName(playerid, pName, MAX_PLAYER_NAME);
+	format(str, 128, "INFO: %s paardeva iipashumu \"%s\" par $%d", pName, PropInfo[ID][PropName], PropInfo[ID][PropSell]);
+	SendClientMessageToAll(COLOR_WHITE, str);
+	return 1;
+}
+
+stock PlayerToPoint(Float:radi, playerid, Float:x, Float:y, Float:z)
+{
+	new Float:oldposx, Float:oldposy, Float:oldposz;
+	new Float:tempposx, Float:tempposy, Float:tempposz;
+	GetPlayerPos(playerid, oldposx, oldposy, oldposz);
+	tempposx = (oldposx -x);
+	tempposy = (oldposy -y);
+	tempposz = (oldposz -z);
+	if (((tempposx < radi) && (tempposx > -radi)) && ((tempposy < radi) && (tempposy > -radi)) && ((tempposz < radi) && (tempposz > -radi)))
+	{
+		return 1;
+	}
+	return 0;
+}
+
+stock ResetPlayerPropertyInfo(playerid)
+{
+    for(new ID; ID<MAX_PROPERTIES; ID++)
+	{
+		if(PropInfo[ID][PropIsBought] == 1 && PropInfo[ID][PropOwner] == playerid)
+		{
+		    PropInfo[ID][PropIsBought] = 0;
+		    PropInfo[ID][PropOwner] = -1;
+		}
+	}
+	PlayerPropertyCount[playerid] = 0;
+	PlayerEarnings[playerid] = 0;
+	if(IsTextdrawActive[playerid] == 1)
+	{
+	    TextDrawDestroy(PropertyText1[playerid]);
+	    TextDrawDestroy(PropertyText2[playerid]);
+	    KillTimer(TextdrawTimer[playerid]);
+	}
+	IsTextdrawActive[playerid] = 0;
+	return 1;
+}
+
+stock IsPlayerNearProperty(playerid)
+{
+	for(new i=1; i<MAX_PROPERTIES; i++)
+	{
+	    if(PlayerToPoint(MAX_DISTANCE_TO_PROPERTY, playerid, PropInfo[i][PropX], PropInfo[i][PropY], PropInfo[i][PropZ]))
+	    {
+	        return i;
+		}
+	}
+	return -1;
+}
+
+forward PropertyPayout();
+public PropertyPayout()
+{
+	for(new i; i<MAX_PLAYERS; i++)
+	{
+	    if(IsPlayerConnected(i))
+	    {
+		    if(PlayerEarnings[i] > 0)
+		    {
+		        GivePlayerMoney(i, PlayerEarnings[i]);
+				new str[128];
+				format(str, 128, "INFO: Tu saneemi $%d par saviem iipashumiem!", PlayerEarnings[i]);
+				SendClientMessage(i, COLOR_GREEN, str);
+			}
+		}
+	}
+}
+
+
+
+stock GetPropertyName(propertyID)
+{
+	new PropertyName[64];
+	format(PropertyName, 64, "%s", PropInfo[propertyID][PropName]);
+	return PropertyName;
+}
+stock GetPropertyOwner(propertyID)
+{
+	new PropertyOwner[MAX_PLAYER_NAME];
+	if(PropInfo[propertyID][PropIsBought] == 1)
+	{
+		new oName[MAX_PLAYER_NAME];
+		GetPlayerName(PropInfo[propertyID][PropOwner], oName, sizeof(oName));
+		format(PropertyOwner, MAX_PLAYER_NAME, "%s", oName);
+	}
+	else
+	{
+	    format(PropertyOwner, MAX_PLAYER_NAME, "%s");
+	}
+	return PropertyOwner;
+}
+
+stock ToggleProperty(propertyID, toggle)
+{
+	if(toggle == 1)
+	{
+	    if(PropInfo[propertyID][PropIsEnabled] == 0)
+	    {
+			PropInfo[propertyID][PropIsEnabled] = 1;
+		}
+	}
+	else if(toggle == 0)
+	{
+	    if(PropInfo[propertyID][PropIsEnabled] == 1)
+	    {
+			PropInfo[propertyID][PropIsEnabled] = 0;
+		}
+	}
+}
+
+stock DestroyAllPropertyPickups()
+{
+	for(new ID=1; ID<MAX_PROPERTIES; ID++)
+	{
+		DestroyPickup(PropertyPickup[ID]);
+	}
+}
+
+stock UsePropertyTextDraw(toggle)
+{
+	if(toggle < 0 || toggle > 1) return 0;
+	UseTextDraw = toggle;
+	return 1;
+}
+
+
+stock DoesPropertyExists(propertyID)
+{
+	if(PropInfo[propertyID][PropExists] == 1)
+	{
+		return 1;
+	}
+	return 0;
+}
+
+// Kad uzkaapj uz iipashuma ikonas
+stock OnPropertyPickupPickup(playerid, pickupid)
+{
+ 	new ID = -1;
+	for(new i=1; i<MAX_PROPERTIES; i++)
+	{
+	    if(pickupid == PropertyPickup[i])
+	    {
+	        ID = i;
+			break;
+		}
+	}
+	if(ID != -1)
+	{
+	    if(UseTextDraw == 1)
+	    {
+		    if(IsTextdrawActive[playerid] == 1)
+			{
+			    TextDrawDestroy(PropertyText1[playerid]);
+			    TextDrawDestroy(PropertyText2[playerid]);
+			    KillTimer(TextdrawTimer[playerid]);
+			}
+		}
+	    new str[128], str2[128], str3[256];
+	    if(PropInfo[ID][PropIsBought] == 0)
+	    {
+	        if(UseTextDraw == 1)
+			{
+	       		format(str2, sizeof(str2), "~r~Ienaakumi katras %d sekundes: ~w~$%d ~n~~r~Ipashnieks: ~w~Neviens", PropertyPayoutFrequency, PropInfo[ID][PropEarning]);
+			}
+			else
+			{
+			    format(str2, sizeof(str2), "~r~Ienakumi: ~w~$%d ~n~~r~Ipasnieks: ~w~Neviens", PropInfo[ID][PropEarning]);
+			}
+		}
+		else
+		{
+		    if(UseTextDraw == 1)
+			{
+	          	new oName[MAX_PLAYER_NAME];
+			    GetPlayerName(PropInfo[ID][PropOwner], oName, MAX_PLAYER_NAME);
+			    format(str2, 128, "~r~Ienaakumi katras %d sekundes: ~w~$%d ~n~~r~Iipasnieks: ~w~%s", PropertyPayoutFrequency, PropInfo[ID][PropEarning], oName);
+			}
+			else
+			{
+	          	new oName[MAX_PLAYER_NAME];
+			    GetPlayerName(PropInfo[ID][PropOwner], oName, MAX_PLAYER_NAME);
+			    format(str2, 128, "~r~Ienakumi: ~w~$%d ~n~~r~Ipashnieks: ~w~%s", PropInfo[ID][PropEarning], oName);
+			}
+
+		}
+	    format(str, 128, "~w~\"%s\"~n~~r~Cena: ~w~$%d ~n~~r~Pardosanas cena: ~w~$%d", PropInfo[ID][PropName],PropInfo[ID][PropPrice], PropInfo[ID][PropSell]);
+		if(UseTextDraw == 1)
+		{
+			PropertyText1[playerid] = TextDrawCreate(10,150,str);
+			PropertyText2[playerid] = TextDrawCreate(10,185,str2);
+	 		TextDrawLetterSize(PropertyText1[playerid] , 0.4, 1.30);
+	 		TextDrawLetterSize(PropertyText2[playerid] , 0.4, 1.30);
+	 		TextDrawShowForPlayer(playerid,PropertyText1[playerid]);
+		 	TextDrawShowForPlayer(playerid,PropertyText2[playerid]);
+	 		IsTextdrawActive[playerid] = 1;
+	 		TextdrawTimer[playerid] = SetTimerEx("DestroyTextdraw",3000,false,"i",playerid);
+		}
+		else
+		{
+		    format(str3, 256, "%s~n~%s", str, str2);
+		    GameTextForPlayer(playerid, str3, 10000, 3);
+		}
+	}
+}
+
+forward DestroyTextdraw(playerid);
+public DestroyTextdraw(playerid)
+{
+    if(UseTextDraw == 1)
+	{
+		TextDrawDestroy(PropertyText1[playerid]);
+		TextDrawDestroy(PropertyText2[playerid]);
+		IsTextdrawActive[playerid] = 0;
+	}
+}
+

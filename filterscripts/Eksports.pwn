@@ -1,33 +1,25 @@
 #include <a_samp>
-//#include <AC_FS>
-
 #include <float>
 #include <string>
 #include <time>
+
 #pragma tabsize 0
 
+// Checkpointu defineeshana
 #define CHECKPOINT_NOEXPORT 0
 #define CHECKPOINT_EXPORT 1
+
+// Kraasu defineeshana
 #define COLOR_LIGHTBLUE 0x33CCFFAA
-#define COLOR_GRAD 0xB4B5B7AA
-#define COLOR_VAGOS 0xFFC801C8
-#define COLOR_LIGHTRED 0xFF0000AA
 #define COLOR_YELLOW 0xFFFF00AA
-#define COLOR_BLACK 0x000000ff
-#define COLOR_BLUE 0x0000ffff
-#define COLOR_WHITE 0xFFFFFFAA
-#define COLOR_GREEN 0x33AA33AA
+#define COL_WHITE "{FFFFFF}"
 
-forward PlayerToPoint (Float:radi, playerid, Float:x, Float:y, Float:z);
-forward ShowCheckpoint();
-forward ScanVehicleStatus();
-forward CarExport();
-forward CoastExportCar(carid);
-
+// Mainiigie
 new MiniMission[MAX_PLAYERS];
 new carselect[3];
 new num1,num2,num3;
 new Float:pX, Float:pY, Float:pZ;
+new ExportTimers[MAX_PLAYERS];
 
 new RandCarsX[20][1] = {
 	{404},{405},{410},{413},{418},
@@ -269,30 +261,35 @@ public OnFilterScriptInit() {
     SetTimer("CarExport", 300000, 1);
     SetTimer("ShowCheckpoint", 1000, 1);
     SetTimer("ScanVehicleStatus", 1000, 1);
-    pX = -1577.3334;
-    pY = 119.9252;
-    pZ = 3.5495;
+	pX = -1569.8853;
+	pY = 98.0431;
+	pZ = 3.5547;
     CarExport();
     return 1;
 }
 
+public OnPlayerConnect(playerid)
+{
+    ExportTimers[playerid] = SetTimerEx("ExportTimer",1000,1,"d",playerid);
+ 	return 1;
+}
+
+forward CarExport();
 public CarExport() {
     new string[256];
     new randa = random(sizeof(RandCarsX));
-    randa = random(sizeof(RandCarsX));
-    carselect[0] = RandCarsX[randa][0];
-    randa = random(sizeof(RandCarsXL));
-    carselect[1] = RandCarsXL[randa][0];
-    randa = random(sizeof(RandCarsXXL));
-    carselect[2] = RandCarsXXL[randa][0];
+    randa = random(sizeof(RandCarsX));    carselect[0] = RandCarsX[randa][0];
+    randa = random(sizeof(RandCarsXL));    carselect[1] = RandCarsXL[randa][0];
+    randa = random(sizeof(RandCarsXXL));    carselect[2] = RandCarsXXL[randa][0];
     num1 = carselect[0] - 400;
     num2 = carselect[1] - 400;
     num3 = carselect[2] - 400;
-    format(string, sizeof(string), "Eksporteejamaas mashiinas: %s, %s, %s ", VehicleName[num1], VehicleName[num2], VehicleName[num3]);
-    SendClientMessageToAll(COLOR_WHITE, string);
+    format(string, sizeof(string), "EKSPORTEJAMAS MASHINAS:" COL_WHITE " %s, %s, %s ", VehicleName[num1], VehicleName[num2], VehicleName[num3]);
+    SendClientMessageToAll(COLOR_YELLOW, string);
     return 1;
 }
 
+forward PlayerToPoint (Float:radi, playerid, Float:x, Float:y, Float:z);
 public PlayerToPoint(Float: radi, playerid, Float: x, Float: y, Float: z) {
     new Float: oldposx, Float: oldposy, Float: oldposz;
     new Float: tempposx, Float: tempposy, Float: tempposz;
@@ -306,6 +303,7 @@ public PlayerToPoint(Float: radi, playerid, Float: x, Float: y, Float: z) {
     return 0;
 }
 
+forward ShowCheckpoint();
 public ShowCheckpoint() {
     for (new i = 0; i < MAX_PLAYERS; i++) {
         if (IsPlayerConnected(i)) {
@@ -321,6 +319,7 @@ public ShowCheckpoint() {
     return 1;
 }
 
+forward ScanVehicleStatus();
 public ScanVehicleStatus() {
     for (new i = 0; i < MAX_PLAYERS; i++) {
         if (IsPlayerInAnyVehicle(i)) {
@@ -336,8 +335,8 @@ public ScanVehicleStatus() {
 public OnPlayerCommandText(playerid, cmdtext[]) {
     new string[255];
     if (strcmp(cmdtext, "/export", true) == 0) {
-        format(string, sizeof(string), "Eksporteejamaas mashiinas: %s, %s, %s.", VehicleName[num1], VehicleName[num2], VehicleName[num3]);
-        SendClientMessage(playerid, COLOR_WHITE, string);
+        format(string, sizeof(string), "EKSPORTEJAMAS MASHINAS:" COL_WHITE " %s, %s, %s.", VehicleName[num1], VehicleName[num2], VehicleName[num3]);
+        SendClientMessage(playerid, COLOR_YELLOW, string);
         return 1;
     }
     return 0;
@@ -356,14 +355,20 @@ public OnPlayerStateChange(playerid, newstate, oldstate) {
         new newcar = GetPlayerVehicleID(playerid);
         new model = GetVehicleModel(newcar);
         if (model == carselect[0] || model == carselect[1] || model == carselect[2]) {
+            SetPVarInt(playerid,"ExportableCar", 1);
             MiniMission[playerid] = CHECKPOINT_EXPORT;
-            SendClientMessage(playerid, COLOR_YELLOW, "Sho auto var nodot San Fierro ostaa.");
+            SendClientMessage(playerid, COLOR_YELLOW, "Sho auto var nodot San Fierro ostaa!");
             SetPlayerCheckpoint(playerid, pX, pY, pZ, 4.0);
         }
     }
+    if(newstate == PLAYER_STATE_ONFOOT)
+	{
+    	SetPVarInt(playerid,"ExportableCar", 0);
+	}
     return 1;
 }
 
+forward CoastExportCar(carid);
 public CoastExportCar(carid){
 	switch (carid) {
 
@@ -440,7 +445,7 @@ public OnPlayerEnterCheckpoint(playerid) {
                         GivePlayerMoney(playerid, carcoast);
                         DisablePlayerCheckpoint(playerid);
                         SetVehicleToRespawn(GetPlayerVehicleID(playerid));
-                        format(string, sizeof(string), "Tu nodevi %s, un saneemi $%d.", VehicleName[carmodel - 400], carcoast);
+                        format(string, sizeof(string), "Tu nodevi %s, un saneemi $%d!", VehicleName[carmodel - 400], carcoast);
                         SendClientMessage(playerid, COLOR_YELLOW, string);
                         MiniMission[playerid] = CHECKPOINT_NOEXPORT;
                     }
@@ -449,7 +454,7 @@ public OnPlayerEnterCheckpoint(playerid) {
         case CHECKPOINT_NOEXPORT:
             {
                 if (IsPlayerInAnyVehicle(playerid)) {
-                    GameTextForPlayer(playerid, "Sho auto tagad nepienemam.", 2500, 3);
+                    GameTextForPlayer(playerid, "Sho auto tagad nepienemam!", 2500, 3);
                 }
             }
     }

@@ -1,10 +1,9 @@
 #include <a_samp>
-//#include <AC_FS>
 
 // DEFINIICIJAS
 #define TextColor   "~g~"  // red
-#define GREEN 0x21DD00FF
-#define RED 0xE60000FF
+#define COLOR_GREEN 0x21DD00FF
+#define COLOR_RED 0xE60000FF
 
 // MAINIIGO DEFINEESHANA
 new VehiclesName[][] ={
@@ -1001,6 +1000,16 @@ public OnFilterScriptInit(){
 	AddStaticVehicle(542,1119.4159,1357.5613,10.5642,179.3075,124,36); //
 	AddStaticVehicle(542,1113.4530,1357.5034,10.5637,178.5400,76,34); //
 	AddStaticVehicle(480,1107.7482,1358.0476,10.5922,180.5762,56,14); //
+	
+	// DRIFT 14
+	AddStaticVehicle(562,-2093.3311,-106.0029,34.9800,179.8655,12,58); // drift 14 elegy
+	AddStaticVehicle(562,-2089.2014,-105.9999,34.9800,179.8975,12,58); // drift 14 elegy
+	AddStaticVehicle(475,-2084.3633,-106.6965,35.1222,178.9982,99,56); // drift 14 sabre
+	AddStaticVehicle(475,-2079.3879,-106.5937,35.1245,180.5906,99,56); // drift 14 sabre
+	AddStaticVehicle(535,-2074.4514,-106.4454,35.0906,179.3687,61,89); // drift 14 slamvan
+	AddStaticVehicle(535,-2069.5083,-106.4463,35.0866,180.0957,61,89); // drift 14 slamvan
+	AddStaticVehicle(542,-2065.2192,-106.7433,35.0680,179.9625,76,34); // drift 14 clover
+	AddStaticVehicle(542,-2059.3008,-106.7725,35.0633,179.8871,76,34); // drift 14 clover
 
 	// SF AIRPORT
 	AddStaticVehicle(513,-1465.0574,-529.8659,14.7072,249.6543,81,57); // stunt
@@ -1269,7 +1278,7 @@ public OnPlayerStateChange(playerid, newstate, oldstate){
     if (newstate == PLAYER_STATE_DRIVER)
     {
 		format(vehname,sizeof(vehname),"%s%s",TextColor,VehiclesName[GetVehicleModel(GetPlayerVehicleID(playerid))-400]);
-		GameTextForPlayer(playerid,vehname,500,1);
+		GameTextForPlayer(playerid,vehname,100,1);
     }
     return 1;
 }
