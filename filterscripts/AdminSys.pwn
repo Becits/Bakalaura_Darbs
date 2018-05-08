@@ -13,6 +13,7 @@
 #define COLOR_WHITE 0xFFFFFFAA
 #define COLOR_LIME 0x99FF00AA
 #define COLOR_LIGHTBLUE 0x33CCFFAA
+#define COL_WHITE "{FFFFFF}"
 
 // Dialogu ID
 #define DIALOG_LOGIN 3
@@ -252,7 +253,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
 		}
 		SendClientMessage (playerid,COLOR_LIME,"SERVERA IPASNIEKA KOMANDAS");
 		SendClientMessage(playerid, COLOR_WHITE, "/a /mute, /unmute, /kick, /jail, /unjail, /time, /info, /ban, /weather, /spec, /specoff.");
-		SendClientMessage(playerid, COLOR_WHITE, "/v, /makeadmin, /setscore, /setcash, /get, /goto, /resetstats, /dec, /unban.");
+		SendClientMessage(playerid, COLOR_WHITE, "/veh, /makeadmin, /setscore, /setcash, /get, /goto, /resetstats, /dec, /unban.");
 		return 1;
 	}
 	
@@ -289,16 +290,20 @@ dcmd_mute(playerid,params[])
 	if(Player[playerid][Muted] == 1) {
  	return SendClientMessage(playerid,COLOR_BRIGHTRED,"Speletajs jau ir apklusinats.");
  	}
-	new
- 	name[MAX_PLAYER_NAME],
- 	string[256];
-	GetPlayerName(pID,name,sizeof(name));
-	new Aname[MAX_PLAYER_NAME];
-	GetPlayerName(playerid,Aname,sizeof(Aname));
-	format(string,sizeof(string),"Admins aizliedza %s sarunaties uz %d sekundçm. [Iemesls: %s]",name,MTime,Reason);
-	SendClientMessageToAll(COLOR_WHITE,string);
- 	MutedTime(pID);
- 	Player[pID][Muted] = 1;
+ 	if (playerid != pID) {
+		new
+	 	name[MAX_PLAYER_NAME],
+	 	string[256];
+		GetPlayerName(pID,name,sizeof(name));
+		new Aname[MAX_PLAYER_NAME];
+		GetPlayerName(playerid,Aname,sizeof(Aname));
+		format(string,sizeof(string),"Admins aizliedza %s sarunaties uz %d sekundçm. [Iemesls: %s]",name,MTime,Reason);
+		SendClientMessageToAll(COLOR_WHITE,string);
+	 	MutedTime(pID);
+	 	Player[pID][Muted] = 1;
+ 	} else {
+ 		SendClientMessage(playerid, COLOR_BRIGHTRED, "Tu nevari lietot sho komandu pret sevi!");
+   	}
   	return 1;
 }
 
@@ -342,8 +347,12 @@ dcmd_spec(playerid,params[])
 	if(!IsPlayerConnected(pID)){
  	return SendClientMessage (playerid,COLOR_BRIGHTRED,"Speletajs ar sadu ID neeksiste!");
 	}
-	TogglePlayerSpectating(playerid, 1);
-    PlayerSpectatePlayer(playerid, pID);
+	if (playerid != pID) {
+		TogglePlayerSpectating(playerid, 1);
+	    PlayerSpectatePlayer(playerid, pID);
+    } else {
+ 		SendClientMessage(playerid, COLOR_BRIGHTRED, "Tu nevari lietot sho komandu pret sevi!");
+   	}
   	return 1;
 }
 
@@ -371,16 +380,20 @@ dcmd_resetstats(playerid,params[])
 	if(!IsPlayerConnected(pID)){
  	return SendClientMessage (playerid,COLOR_BRIGHTRED,"Speletajs ar sadu ID neeksiste!");
 	}
-	Player[pID][Kills] = 0;
-	Player[pID][Deaths] = 0;
-	Player[pID][Money] = 0;
-	Player[pID][Score] = 0;
-	ResetPlayerMoney(pID);
-	SetPlayerScore(pID,0);
-	new string[256], name[MAX_PLAYERS];
-	GetPlayerName(pID,name,sizeof(name));
-	format(string, sizeof(string), "Tu restarteji %s datus.",name);
-	SendClientMessage(playerid, COLOR_WHITE, string);
+	if (playerid != pID) {
+		Player[pID][Kills] = 0;
+		Player[pID][Deaths] = 0;
+		Player[pID][Money] = 0;
+		Player[pID][Score] = 0;
+		ResetPlayerMoney(pID);
+		SetPlayerScore(pID,0);
+		new string[256], name[MAX_PLAYERS];
+		GetPlayerName(pID,name,sizeof(name));
+		format(string, sizeof(string), "Tu nonuleeji %s datus.",name);
+		SendClientMessage(playerid, COLOR_WHITE, string);
+	} else {
+ 		SendClientMessage(playerid, COLOR_BRIGHTRED, "Tu nevari lietot sho komandu pret sevi!");
+   	}
   	return 1;
 }
 
@@ -408,15 +421,19 @@ dcmd_report(playerid,params[])
 	{
 	new pID, sReason[128];
 	if(sscanf(params,"ds",pID,sReason)) {
-	return  SendClientMessage(playerid,COLOR_BRIGHTRED,"Pielietojums: /report [ID] [Iemesls]");
+		return  SendClientMessage(playerid,COLOR_YELLOW, "PIELIETOJUMS:" COL_WHITE " /report [ID] [Iemesls]");
 	}
 	if(!IsPlayerConnected(pID)) {
-	return SendClientMessage(playerid,COLOR_BRIGHTRED,"Speletajs ar sadu ID neeksiste!");
+		return SendClientMessage(playerid,COLOR_BRIGHTRED,"Speletajs ar sadu ID neeksiste!");
 	}
-	new Tplayer[MAX_PLAYER_NAME],string[128];
-	GetPlayerName(pID,Tplayer,sizeof(Tplayer));
-	format(string,sizeof(string),"Sudziba: %s nosudzeja [ID %d]. [Iemesls: %s]",Tplayer,pID,sReason[0] ? sReason : "<Nav iemesla>");
-	SendAdminMessage(COLOR_YELLOW,string);
+	if (playerid != pID) {
+		new Tplayer[MAX_PLAYER_NAME],string[128];
+		GetPlayerName(pID,Tplayer,sizeof(Tplayer));
+		format(string,sizeof(string),"Sudziba: %s nosudzeja [ID %d]. [Iemesls: %s]",Tplayer,pID,sReason[0] ? sReason : "<Nav iemesla>");
+		SendAdminMessage(COLOR_YELLOW,string);
+	} else {
+ 		SendClientMessage(playerid, COLOR_BRIGHTRED, "Tu nevari lietot sho komandu pret sevi!");
+   	}
 	return 1;
 }
 
@@ -436,11 +453,15 @@ dcmd_kick(playerid,params[])
 	if(Player[playerid][Admin] < Player[pID][Admin]){
 	return SendClientMessage(playerid,COLOR_BRIGHTRED,"Tu nevari izkikot augstakas pakapes administratoru.");
 	}
-	new name[MAX_PLAYER_NAME],string[256];
-	GetPlayerName(pID,name,sizeof(name));
-	format(string,sizeof(string),"Admins izkikoja %s. [Iemesls: %s]",name,Reason);
-	SendClientMessageToAll(COLOR_WHITE,string);
- 	Kick(pID);
+	if (playerid != pID) {
+		new name[MAX_PLAYER_NAME],string[256];
+		GetPlayerName(pID,name,sizeof(name));
+		format(string,sizeof(string),"Admins izkikoja %s. [Iemesls: %s]",name,Reason);
+		SendClientMessageToAll(COLOR_WHITE,string);
+	 	Kick(pID);
+    } else {
+ 		SendClientMessage(playerid, COLOR_BRIGHTRED, "Tu nevari lietot sho komandu pret sevi!");
+   	}
   	return 1;
 }
 
@@ -463,16 +484,20 @@ dcmd_jail(playerid,params[])
 	if(TeamKill[pID] == 1) {
  	return SendClientMessage(playerid,COLOR_BRIGHTRED,"Speletajs jau atrodas cietuma.");
  	}
-	new
- 	name[MAX_PLAYER_NAME],
- 	string[256];
-	GetPlayerName(pID,name,sizeof(name));
-	format(string,sizeof(string),"Admins ielika %s cietuma uz %d sekundem. [Iemesls: %s]",name,JTime,Reason);
-	SendClientMessageToAll(COLOR_WHITE,string);
-	TeamKill[pID] = 1;
-	JailTime(pID);
-	SetPlayerPos(pID,-11.5327,2328.8679,24.1406);
- 	TextDrawShowForPlayer(pID, JailTextDraw[pID]);
+ 	if (playerid != pID) {
+		new
+	 	name[MAX_PLAYER_NAME],
+	 	string[256];
+		GetPlayerName(pID,name,sizeof(name));
+		format(string,sizeof(string),"Admins ielika %s cietuma uz %d sekundem. [Iemesls: %s]",name,JTime,Reason);
+		SendClientMessageToAll(COLOR_WHITE,string);
+		TeamKill[pID] = 1;
+		JailTime(pID);
+		SetPlayerPos(pID,-11.5327,2328.8679,24.1406);
+	 	TextDrawShowForPlayer(pID, JailTextDraw[pID]);
+ 	} else {
+ 		SendClientMessage(playerid, COLOR_BRIGHTRED, "Tu nevari lietot sho komandu pret sevi!");
+   	}
   	return 1;
 }
 
@@ -489,9 +514,13 @@ dcmd_unjail(playerid,params[])
 	if(!IsPlayerConnected(pID)){
  	return SendClientMessage (playerid,COLOR_BRIGHTRED,"Speletajs ar sadu ID neeksiste!");
 	}
+	if (playerid == pID) {
+	return SendClientMessage(playerid, COLOR_BRIGHTRED, "Tu nevari lietot sho komandu pret sevi!");
+   	}
 	if(TeamKill[pID] == 0){
 	return SendClientMessage(playerid,COLOR_BRIGHTRED,"Speletajs neatrodas cietuma.");
 	}
+
 	TeamKill[pID] = 0;
 	JTime[pID] = 0;
 	KillTimer(JTTimer[pID]);
@@ -516,13 +545,17 @@ dcmd_ban(playerid,params[])
 	if(Player[playerid][Admin] < Player[pID][Admin]){
 	return SendClientMessage(playerid,COLOR_BRIGHTRED,"Tu nevari nobanot augstakas pakapes administratoru.");
 	}
-	new name[MAX_PLAYER_NAME],string[256];
-	GetPlayerName(pID,name,sizeof(name));
-	new Aname[MAX_PLAYER_NAME];
-	GetPlayerName(playerid,Aname,sizeof(Aname));
-	format(string,sizeof(string),"Admins nobanoja %s. [Iemesls: %s]",name,Reason);
-	SendClientMessageToAll(COLOR_WHITE,string);
- 	Ban(pID);
+	if (playerid != pID) {
+		new name[MAX_PLAYER_NAME],string[256];
+		GetPlayerName(pID,name,sizeof(name));
+		new Aname[MAX_PLAYER_NAME];
+		GetPlayerName(playerid,Aname,sizeof(Aname));
+		format(string,sizeof(string),"Admins nobanoja %s. [Iemesls: %s]",name,Reason);
+		SendClientMessageToAll(COLOR_WHITE,string);
+	 	Ban(pID);
+ 	} else {
+ 		SendClientMessage(playerid, COLOR_BRIGHTRED, "Tu nevari lietot sho komandu pret sevi!");
+   	}
   	return 1;
 }
 
@@ -590,14 +623,18 @@ dcmd_makeadmin(playerid,params[])
 	if(!IsPlayerConnected(pID)){
  	return SendClientMessage (playerid,COLOR_BRIGHTRED,"Speletajs ar sadu ID neeksiste!");
 	}
-	new string[128],string2[128],aname[MAX_PLAYER_NAME],name[MAX_PLAYER_NAME];
-	Player[pID][Admin] = alevel;
-	GetPlayerName(playerid,aname,sizeof(aname));
-	GetPlayerName(pID,name,sizeof(name));
-	format(string,sizeof(string),"Tu uzstadiji %s admina limeni uz %d.",name,alevel);
- 	format(string2,sizeof(string2),"Admins %s uzstadija tavu admina limeni uz %d.",aname,alevel);
- 	SendClientMessage(playerid,COLOR_WHITE,string);
- 	SendClientMessage(pID,COLOR_WHITE,string2);
+	if (playerid != pID) {
+		new string[128],string2[128],aname[MAX_PLAYER_NAME],name[MAX_PLAYER_NAME];
+		Player[pID][Admin] = alevel;
+		GetPlayerName(playerid,aname,sizeof(aname));
+		GetPlayerName(pID,name,sizeof(name));
+		format(string,sizeof(string),"Tu uzstadiji %s admina limeni uz %d.",name,alevel);
+	 	format(string2,sizeof(string2),"Admins %s uzstadija tavu admina limeni uz %d.",aname,alevel);
+	 	SendClientMessage(playerid,COLOR_WHITE,string);
+	 	SendClientMessage(pID,COLOR_WHITE,string2);
+ 	} else {
+ 		SendClientMessage(playerid, COLOR_BRIGHTRED, "Tu nevari lietot sho komandu pret sevi!");
+   	}
 	return 1;
 }
 
@@ -615,14 +652,18 @@ dcmd_setscore(playerid,params[])
 	if(!IsPlayerConnected(pID)){
  	return SendClientMessage(playerid,COLOR_BRIGHTRED,"Speletajs ar sadu ID neeksiste!");
 	}
-	new string[128],string2[128],aname[MAX_PLAYER_NAME],name[MAX_PLAYER_NAME];
-	SetPlayerScore(pID,scores);
-	GetPlayerName(playerid,aname,sizeof(aname));
-	GetPlayerName(pID,name,sizeof(name));
-	format(string,sizeof(string),"Tu uzstadiji %s limeni uz %d.",name,scores);
-    format(string2,sizeof(string2),"Admins %s uzstadija tavu limeni uz %d.",aname,scores);
-    SendClientMessage(playerid,COLOR_WHITE,string);
-    SendClientMessage(pID,COLOR_WHITE,string2);
+	if (playerid != pID) {
+		new string[128],string2[128],aname[MAX_PLAYER_NAME],name[MAX_PLAYER_NAME];
+		SetPlayerScore(pID,scores);
+		GetPlayerName(playerid,aname,sizeof(aname));
+		GetPlayerName(pID,name,sizeof(name));
+		format(string,sizeof(string),"Tu uzstadiji %s limeni uz %d.",name,scores);
+	    format(string2,sizeof(string2),"Admins %s uzstadija tavu limeni uz %d.",aname,scores);
+	    SendClientMessage(playerid,COLOR_WHITE,string);
+	    SendClientMessage(pID,COLOR_WHITE,string2);
+    } else {
+ 		SendClientMessage(playerid, COLOR_BRIGHTRED, "Tu nevari lietot sho komandu pret sevi!");
+   	}
 	return 1;
 }
 
@@ -639,29 +680,33 @@ dcmd_goto(playerid,params[])
 	if(!IsPlayerConnected(pID)){
  	return SendClientMessage (playerid,COLOR_BRIGHTRED,"Speletajs ar sadu ID neeksiste!");
 	}
-	if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER)
-    {
-   	new string[128],name[MAX_PLAYER_NAME];
-	GetPlayerName(pID,name,sizeof(name));
-	format(string,sizeof(string),"Tu tiki teleportets pie %s.",name);
-	new veh = GetPlayerVehicleID(playerid);
-	new Float:x,Float:y,Float:z;
-	GetPlayerPos(pID,x,y,z);
-	SetVehiclePos(veh,x,y,z);
-    SendClientMessage(playerid,COLOR_WHITE,string);
-    return 1;
-    }
-    else
-    {
-	new string[128],name[MAX_PLAYER_NAME];
-	GetPlayerName(pID,name,sizeof(name));
-	format(string,sizeof(string),"Tu tiki teleportets pie %s.",name);
-	new Float:x,Float:y,Float:z;
-	GetPlayerPos(pID,x,y,z);
-	SetPlayerPos(playerid,x,y,z);
-    SendClientMessage(playerid,COLOR_WHITE,string);
+	if (playerid != pID) {
+		if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER)
+	    {
+		   	new string[128],name[MAX_PLAYER_NAME];
+			GetPlayerName(pID,name,sizeof(name));
+			format(string,sizeof(string),"Tu tiki teleportets pie %s.",name);
+			new veh = GetPlayerVehicleID(playerid);
+			new Float:x,Float:y,Float:z;
+			GetPlayerPos(pID,x,y,z);
+			SetVehiclePos(veh,x,y,z);
+		    SendClientMessage(playerid,COLOR_WHITE,string);
+		    return 1;
+	    }
+	    else
+	    {
+			new string[128],name[MAX_PLAYER_NAME];
+			GetPlayerName(pID,name,sizeof(name));
+			format(string,sizeof(string),"Tu tiki teleportets pie %s.",name);
+			new Float:x,Float:y,Float:z;
+			GetPlayerPos(pID,x,y,z);
+			SetPlayerPos(playerid,x,y,z);
+		    SendClientMessage(playerid,COLOR_WHITE,string);
+		}
+    } else {
+ 		SendClientMessage(playerid, COLOR_BRIGHTRED, "Tu nevari lietot sho komandu pret sevi!");
+   	}
 	return 1;
-	}
 }
 dcmd_get(playerid,params[])
 	{
@@ -676,30 +721,34 @@ dcmd_get(playerid,params[])
 	if(!IsPlayerConnected(pID)){
  	return SendClientMessage (playerid,COLOR_BRIGHTRED,"Speletajs ar sadu ID neeksiste!");
 	}
-	new string[128],string2[128],aname[MAX_PLAYER_NAME],name[MAX_PLAYER_NAME];
-	GetPlayerName(pID,name,sizeof(name));
-    GetPlayerName(playerid,aname,sizeof(aname));
-	if (GetPlayerState(pID) == PLAYER_STATE_DRIVER)
-    {
-	GetPlayerName(pID,name,sizeof(name));
-	format(string,sizeof(string),"Tu tiki teleportets pie %s.",name);
-	new Float:x,Float:y,Float:z;
-	GetPlayerPos(playerid,x,y,z);
-	SetVehiclePos(pID,x,y,z);
-    SendClientMessage(playerid,COLOR_WHITE,string);
-    return 1;
-    }
-    else
-    {
-	format(string,sizeof(string),"Admins %s tevi atteleportçja pie sevim.",aname);
-    format(string2,sizeof(string2),"Tu atteleporteji %s pie sevim.",name);
-	new Float:x,Float:y,Float:z;
-	GetPlayerPos(playerid,x,y,z);
-	SetPlayerPos(pID,x,y,z);
-    SendClientMessage(pID,COLOR_WHITE,string);
-    SendClientMessage(playerid,COLOR_WHITE,string2);
+	if (playerid != pID) {
+		new string[128],string2[128],aname[MAX_PLAYER_NAME],name[MAX_PLAYER_NAME];
+		GetPlayerName(pID,name,sizeof(name));
+	    GetPlayerName(playerid,aname,sizeof(aname));
+		if (GetPlayerState(pID) == PLAYER_STATE_DRIVER)
+	    {
+			GetPlayerName(pID,name,sizeof(name));
+			format(string,sizeof(string),"Tu tiki teleportets pie %s.",name);
+			new Float:x,Float:y,Float:z;
+			GetPlayerPos(playerid,x,y,z);
+			SetVehiclePos(pID,x,y,z);
+		    SendClientMessage(playerid,COLOR_WHITE,string);
+		    return 1;
+	    }
+	    else
+	    {
+			format(string,sizeof(string),"Admins %s tevi atteleporteja pie sevim.",aname);
+		    format(string2,sizeof(string2),"Tu atteleporteji %s pie sevim.",name);
+			new Float:x,Float:y,Float:z;
+			GetPlayerPos(playerid,x,y,z);
+			SetPlayerPos(pID,x,y,z);
+		    SendClientMessage(pID,COLOR_WHITE,string);
+		    SendClientMessage(playerid,COLOR_WHITE,string2);
+		}
+    } else {
+ 		SendClientMessage(playerid, COLOR_BRIGHTRED, "Tu nevari lietot sho komandu pret sevi!");
+   	}
 	return 1;
-	}
 }
 
 dcmd_time(playerid,params[])

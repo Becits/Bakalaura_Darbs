@@ -27,7 +27,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
         if (strcmp("/math", cmd, true) == 0) {
 		    new tmp[256], cmdid, string[256], pname[MAX_PLAYER_NAME];
 		    tmp = strtok(cmdtext, idx);
-		    if (!strlen(tmp)) return SendClientMessage(playerid, COLOR_RED, "PIELIETOJUMS: /math [atbilde]");
+		    if (!strlen(tmp)) return SendClientMessage(playerid, COLOR_YELLOW, "PIELIETOJUMS:" COL_WHITE " /math [Atbilde]");
 		    cmdid = strval(tmp);
 		    // Ja ievadiita nepareiza atbilde
 		    if (cmdid < answer || cmdid > answer) {

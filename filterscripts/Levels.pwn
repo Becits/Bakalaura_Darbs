@@ -805,57 +805,57 @@ public OnPlayerCommandText(playerid, cmdtext[]) {
     
     // Liimenu iegaades komanda
 	if (strcmp(cmdtext, "/buylevel", true) == 0) {
-	    if (GetPlayerMoney(playerid) >= 0 && GetPlayerScore(playerid) == 0) {
+	    if (GetPlayerMoney(playerid) >= 100 && GetPlayerScore(playerid) == 0) {
 	        SetPlayerScore(playerid, 1);
-	        GivePlayerMoney(playerid, -0);
+	        GivePlayerMoney(playerid, -100);
 	        SendClientMessage(playerid, COLOR_GREEN, "Apsveicam! Tu iegaadaajies 1. liimeni!");
 	        return 1;
 	    } else {
-	        if (GetPlayerMoney(playerid) < 0 && GetPlayerScore(playerid) == 0) {
+	        if (GetPlayerMoney(playerid) < 100 && GetPlayerScore(playerid) == 0) {
 	            SendClientMessage(playerid, COLOR_BRIGHTRED, "Tev nav pietiekami daudz naudas!");
 	            return 1;
 	        }
 	    }
-	    if (GetPlayerMoney(playerid) >= 0 && GetPlayerScore(playerid) == 1) {
+	    if (GetPlayerMoney(playerid) >= 1000 && GetPlayerScore(playerid) == 1) {
 	        SetPlayerScore(playerid, 2);
-	        GivePlayerMoney(playerid, -0);
+	        GivePlayerMoney(playerid, -1000);
 	        SendClientMessage(playerid, COLOR_GREEN, "Apsveicam! Tu iegaadaajies 2. liimeni!");
 	        return 1;
 	    } else {
-	        if (GetPlayerMoney(playerid) < 0 && GetPlayerScore(playerid) == 1) {
+	        if (GetPlayerMoney(playerid) < 1000 && GetPlayerScore(playerid) == 1) {
 	            SendClientMessage(playerid, COLOR_BRIGHTRED, "Tev nav pietiekami daudz naudas!");
 	            return 1;
 	        }
 	    }
-	    if (GetPlayerMoney(playerid) >= 0 && GetPlayerScore(playerid) == 2) {
+	    if (GetPlayerMoney(playerid) >= 10000 && GetPlayerScore(playerid) == 2) {
 	        SetPlayerScore(playerid, 3);
-	        GivePlayerMoney(playerid, -0);
+	        GivePlayerMoney(playerid, -10000);
 	        SendClientMessage(playerid, COLOR_GREEN, "Apsveicam! Tu iegaadaajies 3. liimeni!");
 	        return 1;
 	    } else {
-	        if (GetPlayerMoney(playerid) < 0 && GetPlayerScore(playerid) == 2) {
+	        if (GetPlayerMoney(playerid) < 10000 && GetPlayerScore(playerid) == 2) {
 	            SendClientMessage(playerid, COLOR_BRIGHTRED, "Tev nav pietiekami daudz naudas!");
 	            return 1;
 	        }
 	    }
-	    if (GetPlayerMoney(playerid) >= 0 && GetPlayerScore(playerid) == 3) {
+	    if (GetPlayerMoney(playerid) >= 100000 && GetPlayerScore(playerid) == 3) {
 	        SetPlayerScore(playerid, 4);
-	        GivePlayerMoney(playerid, -0);
+	        GivePlayerMoney(playerid, -100000);
 	        SendClientMessage(playerid, COLOR_GREEN, "Apsveicam! Tu iegaadaajies 4. liimeni!");
 	        return 1;
 	    } else {
-	        if (GetPlayerMoney(playerid) < 0 && GetPlayerScore(playerid) == 3) {
+	        if (GetPlayerMoney(playerid) < 100000 && GetPlayerScore(playerid) == 3) {
 	            SendClientMessage(playerid, COLOR_BRIGHTRED, "Tev nav pietiekami daudz naudas!");
 	            return 1;
 	        }
 	    }
-	    if (GetPlayerMoney(playerid) >= 0 && GetPlayerScore(playerid) == 4) {
+	    if (GetPlayerMoney(playerid) >= 1000000 && GetPlayerScore(playerid) == 4) {
 	        SetPlayerScore(playerid, 5);
-	        GivePlayerMoney(playerid, -0);
+	        GivePlayerMoney(playerid, -1000000);
 	        SendClientMessage(playerid, COLOR_GREEN, "Apsveicam! Tu iegaadaajies 5. liimeni!");
 	        return 1;
 	    } else {
-	        if (GetPlayerMoney(playerid) < 0 && GetPlayerScore(playerid) == 4) {
+	        if (GetPlayerMoney(playerid) < 1000000 && GetPlayerScore(playerid) == 4) {
 	            SendClientMessage(playerid, COLOR_BRIGHTRED, "Tev nav pietiekami daudz naudas!");
 	            return 1;
 	        }

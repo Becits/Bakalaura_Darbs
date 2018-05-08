@@ -335,7 +335,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
 	// Help
 	if (strcmp("/help", cmdtext, true, 10) == 0) {
 	    SendClientMessage(playerid, COLOR_LIME, "INFORMAACIJA");
-	    SendClientMessage(playerid, COLOR_WHITE, "Lietotaaju komandas: /report, /givecash, /pm, /export, /team, /kill.");
+	    SendClientMessage(playerid, COLOR_WHITE, "Lietotaaju komandas: /stats, /report, /givecash, /pm, /export, /team, /kill.");
 	    SendClientMessage(playerid, COLOR_WHITE, "Ipashumu komandas: /buyproperty, /sellproperty, /myproperties.");
 	    SendClientMessage(playerid, COLOR_WHITE, "Automashiinu komandas: /fix");
 	    SendClientMessage(playerid, COLOR_WHITE, "Liimeni: /levels, /dlevels, /buylevel");
@@ -450,9 +450,10 @@ public OnPlayerCommandText(playerid, cmdtext[])
 	    }
 	    return 1;
 	}
+	return SendClientMessage(playerid, COLOR_WHITE, "{B7FF00}SERVERIS:{FFFFFF} Nepareiza komanda! Lieto {B7FF00}/help{FFFFFF}, lai apskatiitu komandas!");
 	
-	return 0;
 }
+
 
 // Ierochu izveele pie spawn
 public OnPlayerSelectedMenuRow(playerid, row) {
