@@ -7,6 +7,7 @@
 
 #include <a_samp>
 #include <Dini>
+#include <streamer>
 #pragma unused ret_memcpy
 #pragma tabsize 0
 
@@ -44,7 +45,7 @@ new gPlayerClass[MAX_PLAYERS];
 // Laiks
 new Text:TimeUp, Text:DateUp;
 
-// Ieroèu izvçle spawnâ
+// Ierochu izveeles mainiigie
 new Menu:Weapons;
 new Menu:Weapons2;
 new Menu:Weapons3;
@@ -450,6 +451,28 @@ public OnPlayerCommandText(playerid, cmdtext[])
 	    }
 	    return 1;
 	}
+	
+	if (strcmp(cmdtext, "/deal", true)==0){
+		if (GetPlayerState(playerid)== 1){
+			ApplyAnimation(playerid,"DEALER","DEALER_DEAL",4.1, 0, 1, 1, 0, 0, 1);
+			return 1;
+   		}
+	}
+	
+	if (strcmp(cmdtext, "/talk", true)==0){
+		if (GetPlayerState(playerid)== 1){
+			ApplyAnimation(playerid,"PED","IDLE_CHAT",4.1, 0, 1, 1, 0, 0, 1);
+			return 1;
+   		}
+	}
+	
+	if (strcmp(cmdtext, "/letsgo", true)==0){
+		if (GetPlayerState(playerid)== 1){
+			ApplyAnimation(playerid,"RYDER","RYD_Beckon_01",4.1, 0, 1, 1, 0, 0, 1);
+			return 1;
+   		}
+	}
+	
 	return SendClientMessage(playerid, COLOR_WHITE, "{B7FF00}SERVERIS:{FFFFFF} Nepareiza komanda! Lieto {B7FF00}/help{FFFFFF}, lai apskatiitu komandas!");
 	
 }

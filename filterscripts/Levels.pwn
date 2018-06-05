@@ -796,7 +796,7 @@ public OnPlayerCommandText(playerid, cmdtext[]) {
         return 1;
     }
     
-    // Liimenu saraksts dialoga kastee
+    // Fu saraksts dialoga kastee
     if (strcmp("/dlevels", cmdtext, true, 10) == 0)
 	{
 		ShowPlayerDialog(playerid,14,DIALOG_STYLE_MSGBOX,"Limenis - Cena - Komanda",LevelDialog,"Labi","");
@@ -2521,7 +2521,7 @@ public OnPlayerCommandText(playerid, cmdtext[]) {
             SendClientMessage(playerid, COLOR_GREY, "ERROR: Tev jaatrodas transportliidzeklii, lai izmantotu sho kommandu!");
         }
         } else {
-        	SendClientMessage(playerid, COLOR_BRIGHTRED, "Sho kommandu var izmantot tikai no 20. liimena!");
+        	SendClientMessage(playerid, COLOR_BRIGHTRED, "Sho kommandu var izmantot tikai no 18. liimena!");
     	}
         return 1;
     }
